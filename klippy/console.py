@@ -5,7 +5,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import sys, optparse, os, re, logging
-import reactor, serialhdl, pins, util, msgproto, clocksync
+from . import reactor, serialhdl, pins, util, msgproto, clocksync
 
 help_txt = """
   This is a debugging console for the Klipper micro-controller.

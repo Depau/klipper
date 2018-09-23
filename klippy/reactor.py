@@ -3,9 +3,14 @@
 # Copyright (C) 2016-2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import os, select, math, time, Queue
+import os, select, math, time
 import greenlet
-import chelper, util
+from . import chelper, util
+
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
 
 class ReactorTimer:
     def __init__(self, callback, waketime):

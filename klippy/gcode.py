@@ -4,7 +4,8 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import os, re, logging, collections
-import homing, kinematics.extruder
+from . import homing
+from .kinematics import extruder
 
 class error(Exception):
     pass
@@ -134,7 +135,7 @@ class GCodeParser:
         if self.move_transform is None:
             self.move_with_transform = self.toolhead.move
             self.position_with_transform = self.toolhead.get_position
-        extruders = kinematics.extruder.get_printer_extruders(self.printer)
+        extruders = extruder.get_printer_extruders(self.printer)
         if extruders:
             self.extruder = extruders[0]
             self.toolhead.set_extruder(self.extruder)
@@ -433,7 +434,7 @@ class GCodeParser:
         self.respond_info('Unknown command:"%s"' % (cmd,))
     def cmd_Tn(self, params):
         # Select Tool
-        extruders = kinematics.extruder.get_printer_extruders(self.printer)
+        extruders = extruder.get_printer_extruders(self.printer)
         index = self.get_int('T', params, minval=0, maxval=len(extruders)-1)
         e = extruders[index]
         if self.extruder is e:

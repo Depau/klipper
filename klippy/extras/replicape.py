@@ -4,7 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
-import pins, mcu
+from .. import pins, mcu
 
 REPLICAPE_MAX_CURRENT = 3.84
 REPLICAPE_SHIFT_REGISTER_BUS = 0x0101

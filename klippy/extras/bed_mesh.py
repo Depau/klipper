@@ -7,7 +7,7 @@
 import logging
 import math
 import json
-import probe
+from . import probe
 
 class BedMeshError(Exception):
     pass

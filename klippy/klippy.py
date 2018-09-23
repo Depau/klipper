@@ -5,9 +5,14 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import sys, os, optparse, logging, time, threading
-import collections, ConfigParser, importlib
-import util, reactor, queuelogger, msgproto
-import gcode, pins, heater, mcu, toolhead
+import collections, importlib
+from . import util, reactor, queuelogger, msgproto
+from . import gcode, pins, heater, mcu, toolhead
+
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 message_ready = "Printer is ready"
 

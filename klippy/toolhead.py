@@ -4,7 +4,8 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import math, logging, importlib
-import mcu, homing, chelper, kinematics.extruder
+from . import mcu, homing, chelper
+from .kinematics import extruder
 
 # Common suffixes: _d is distance (in mm), _v is velocity (in
 #   mm/second), _v2 is velocity squared (mm^2/s^2), _t is time (in
@@ -242,7 +243,7 @@ class ToolHead:
         self.cmove = ffi_main.gc(ffi_lib.move_alloc(), ffi_lib.free)
         self.move_fill = ffi_lib.move_fill
         # Create kinematics class
-        self.extruder = kinematics.extruder.DummyExtruder()
+        self.extruder = extruder.DummyExtruder()
         self.move_queue.set_extruder(self.extruder)
         kin_name = config.get('kinematics')
         try:
@@ -362,7 +363,7 @@ class ToolHead:
         self.dwell(STALL_TIME)
         last_move_time = self.get_last_move_time()
         self.kin.motor_off(last_move_time)
-        for ext in kinematics.extruder.get_printer_extruders(self.printer):
+        for ext in extruder.get_printer_extruders(self.printer):
             ext.motor_off(last_move_time)
         self.dwell(STALL_TIME)
         logging.debug('; Max time of %f', last_move_time)
@@ -465,4 +466,4 @@ class ToolHead:
 
 def add_printer_objects(config):
     config.get_printer().add_object('toolhead', ToolHead(config))
-    kinematics.extruder.add_printer_objects(config)
+    extruder.add_printer_objects(config)

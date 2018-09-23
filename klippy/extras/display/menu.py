@@ -5,10 +5,14 @@
 # Copyright (C) 2018  Janar Sööt <janar.soot@gmail.com>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import os, ConfigParser, logging
+import os, logging
 import sys, ast, re
 import klippy
 
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 
 class error(Exception):
     pass

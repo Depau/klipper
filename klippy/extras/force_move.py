@@ -4,7 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
-import chelper
+from .. import chelper
 
 BUZZ_VELOCITY = 4.
 STALL_TIME = 0.100

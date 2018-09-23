@@ -4,7 +4,8 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import math, logging
-import probe, mathutil
+from . import probe
+from .. import mathutil
 
 class DeltaCalibrate:
     def __init__(self, config):

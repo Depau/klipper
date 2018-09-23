@@ -4,7 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import math, logging
-import stepper, homing, chelper
+from .. import stepper, homing, chelper
 
 EXTRUDE_DIFF_IGNORE = 1.02
 
