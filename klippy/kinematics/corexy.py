@@ -14,9 +14,9 @@ class CoreXYKinematics:
                        stepper.LookupMultiRail(config.getsection('stepper_z')) ]
         self.rails[0].add_to_endstop(self.rails[1].get_endstops()[0][0])
         self.rails[1].add_to_endstop(self.rails[0].get_endstops()[0][0])
-        self.rails[0].setup_itersolve('corexy_stepper_alloc', '+')
-        self.rails[1].setup_itersolve('corexy_stepper_alloc', '-')
-        self.rails[2].setup_itersolve('cartesian_stepper_alloc', 'z')
+        self.rails[0].setup_itersolve('corexy_stepper_alloc', b'+')
+        self.rails[1].setup_itersolve('corexy_stepper_alloc', b'-')
+        self.rails[2].setup_itersolve('cartesian_stepper_alloc', b'z')
         # Setup boundary checks
         max_velocity, max_accel = toolhead.get_max_velocity()
         self.max_z_velocity = config.getfloat(
