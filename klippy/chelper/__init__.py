@@ -131,14 +131,28 @@ def get_mtimes(srcdir, filelist):
         out.append(t)
     return out
 
+def check_setuptools_lib(srcdir, target):
+    fname, ext = os.path.splitext(target)
+
+    for i in os.listdir(srcdir):
+        if i.startswith(fname) and i.endswith(ext):
+            return i
+
+    return target
+
 # Check if the code needs to be compiled
 def check_build_code(srcdir, target, sources, cmd, other_files=[]):
+    # Skip if we're using setuptools library
+    if target != DEST_LIB:
+        return
+
     src_times = get_mtimes(srcdir, sources + other_files)
     obj_times = get_mtimes(srcdir, [target])
     if not obj_times or max(src_times) > min(obj_times):
         logging.info("Building C code module %s", target)
         srcfiles = [os.path.join(srcdir, fname) for fname in sources]
         destlib = os.path.join(srcdir, target)
+        print(cmd % (destlib, ' '.join(srcfiles)))
         os.system(cmd % (destlib, ' '.join(srcfiles)))
 
 FFI_main = None
@@ -150,12 +164,13 @@ def get_ffi():
     global FFI_main, FFI_lib, pyhelper_logging_callback
     if FFI_lib is None:
         srcdir = os.path.dirname(os.path.realpath(__file__))
-        check_build_code(srcdir, DEST_LIB, SOURCE_FILES, COMPILE_CMD
+        lib = check_setuptools_lib(srcdir, DEST_LIB)
+        check_build_code(srcdir, lib, SOURCE_FILES, COMPILE_CMD
                          , OTHER_FILES)
         FFI_main = cffi.FFI()
         for d in defs_all:
             FFI_main.cdef(d)
-        FFI_lib = FFI_main.dlopen(os.path.join(srcdir, DEST_LIB))
+        FFI_lib = FFI_main.dlopen(os.path.join(srcdir, lib))
         # Setup error logging
         def logging_callback(msg):
             logging.error(FFI_main.string(msg))

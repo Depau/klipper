@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, Extension
 
 with open("README.md") as f:
     DESCRIPTION = f.read()
@@ -7,6 +7,18 @@ setup(
     name='Klippy',
     version='0.6.0',
     packages=['klippy'],
+    ext_modules=[
+        Extension("klippy.chelper.c_helper", [
+            "klippy/chelper/pyhelper.c",
+            "klippy/chelper/serialqueue.c",
+            "klippy/chelper/stepcompress.c",
+            "klippy/chelper/itersolve.c",
+            "klippy/chelper/kin_cartesian.c",
+            "klippy/chelper/kin_corexy.c",
+            "klippy/chelper/kin_delta.c",
+            "klippy/chelper/kin_extruder.c"
+        ])
+    ],
     url='https://github.com/KevinOConnor/klipper',
     author='Kevin O\'Connor',
     author_email='kevin@koconnor.net',
