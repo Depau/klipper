@@ -35,6 +35,7 @@ setup(
     ],
     keywords='klipper 3d-printing reprap',
     install_requires=["cffi", "pyserial", "greenlet"],
+    test_requires=["pytest"],
     entry_points={
         'console_scripts': ['klippy=klippy:main'],
     }

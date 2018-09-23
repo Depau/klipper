@@ -3,7 +3,12 @@
 # Copyright (C) 2018  Kevin O'Connor <kevin@koconnor.net>
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
-import sys, os, optparse, logging, subprocess
+import logging
+import os
+import subprocess
+import sys
+
+import pytest
 
 TEMP_GCODE_FILE = "_test_.gcode"
 TEMP_LOG_FILE = "_test_.log"
@@ -18,12 +23,15 @@ class error(Exception):
     pass
 
 class TestCase:
+    __test__ = False
+
     def __init__(self, fname, dictdir, tempdir, verbose, keepfiles):
         self.fname = fname
-        self.dictdir = dictdir
-        self.tempdir = tempdir
+        self.dictdir = os.path.abspath(dictdir)
+        self.tempdir = os.path.abspath(tempdir)
         self.verbose = verbose
         self.keepfiles = keepfiles
+
     def relpath(self, fname, rel='test'):
         if rel == 'dict':
             reldir = self.dictdir
@@ -37,7 +45,7 @@ class TestCase:
         config_fname = gcode_fname = dict_fnames = None
         should_fail = multi_tests = False
         gcode = []
-        f = open(self.fname, 'rb')
+        f = open(self.fname, 'r')
         for line in f:
             cpos = line.find('#')
             if cpos >= 0:
@@ -78,8 +86,8 @@ class TestCase:
         if gcode_fname is None:
             gcode_fname = self.relpath(TEMP_GCODE_FILE, 'temp')
             gcode_is_temp = True
-            f = open(gcode_fname, 'wb')
-            f.write('\n'.join(gcode + ['']))
+            f = open(gcode_fname, 'w')
+            f.write('\n'.join(gcode))
             f.close()
         elif gcode:
             raise error("Can't specify both a gcode file and gcode commands")
@@ -90,13 +98,13 @@ class TestCase:
         # Call klippy
         sys.stderr.write("    Starting %s (%s)\n" % (
             self.fname, os.path.basename(config_fname)))
-        args = [ sys.executable, '-m', 'klippy', config_fname,
-                 '-i', gcode_fname, '-o', TEMP_OUTPUT_FILE, '-v' ]
+        args = [sys.executable, '-m', 'klippy', config_fname,
+                '-i', gcode_fname, '-o', self.relpath(TEMP_OUTPUT_FILE, "temp"), '-v']
         for df in dict_fnames:
             args += ['-d', df]
         if not self.verbose:
-            args += ['-l', TEMP_LOG_FILE]
-        res = subprocess.call(args)
+            args += ['-l', self.relpath(TEMP_LOG_FILE, "temp")]
+        res = subprocess.call(args, cwd=os.path.dirname(__file__))
         is_fail = (should_fail and not res) or (not should_fail and res)
         if is_fail:
             if not self.verbose:
@@ -111,58 +119,30 @@ class TestCase:
             if fname.startswith(TEMP_OUTPUT_FILE):
                 os.unlink(fname)
         if not self.verbose:
-            os.unlink(TEMP_LOG_FILE)
+            os.unlink(self.relpath(TEMP_LOG_FILE, "temp"))
         else:
             sys.stderr.write('\n')
         if gcode_is_temp:
             os.unlink(gcode_fname)
     def run(self):
-        try:
-            self.parse_test()
-        except error as e:
-            return str(e)
-        except Exception:
-            logging.exception("Unhandled exception during test run")
-            return "internal error"
-        return "success"
+        self.parse_test()
     def show_log(self):
-        f = open(TEMP_LOG_FILE, 'rb')
+        f = open(self.relpath(TEMP_LOG_FILE, "temp"), 'rb')
         data = f.read()
         f.close()
         sys.stdout.write(data)
 
 
-######################################################################
-# Startup
-######################################################################
-
-def main():
-    # Parse args
-    usage = "%prog [options] <test cases>"
-    opts = optparse.OptionParser(usage)
-    opts.add_option("-d", "--dictdir", dest="dictdir", default=".",
-                    help="directory for dictionary files")
-    opts.add_option("-t", "--tempdir", dest="tempdir", default=".",
-                    help="directory for temporary files")
-    opts.add_option("-k", action="store_true", dest="keepfiles",
-                    help="do not remove temporary files")
-    opts.add_option("-v", action="store_true", dest="verbose",
-                    help="show all output from tests")
-    options, args = opts.parse_args()
-    if len(args) < 1:
-        opts.error("Incorrect number of arguments")
-    logging.basicConfig(level=logging.DEBUG)
-
-    # Run each test
-    for fname in args:
-        tc = TestCase(fname, options.dictdir, options.tempdir, options.verbose,
-                      options.keepfiles)
-        res = tc.run()
-        if res != 'success':
-            sys.stderr.write("\n\nTest case %s FAILED (%s)!\n\n" % (fname, res))
-            sys.exit(-1)
-
-    sys.stderr.write("\n    All %d test cases passed\n" % (len(args),))
-
-if __name__ == '__main__':
-    main()
+class TestFile:
+    @pytest.mark.parametrize(
+        'file', map(
+            lambda f: os.path.join(os.path.dirname(__file__), f),
+            filter(
+                lambda f: f.endswith(".test"),
+                os.listdir(os.path.dirname(__file__))
+            )
+        )
+    )
+    def test_file(self, file, dictdir, tmpdir, keepfiles):
+        tc = TestCase(file, str(dictdir), str(tmpdir), pytest.config.getoption("verbose") > 0, keepfiles)
+        tc.run()
