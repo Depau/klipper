@@ -192,7 +192,7 @@ class Printer:
                                   'extras', module_name, '__init__.py')
         if not os.path.exists(py_name) and not os.path.exists(py_dirname):
             return None
-        mod = importlib.import_module('extras.' + module_name)
+        mod = importlib.import_module('.extras.' + module_name, package="klippy")
         init_func = 'load_config'
         if len(module_parts) > 1:
             init_func = 'load_config_prefix'
