@@ -74,5 +74,5 @@ HOSTDIR=${BUILD_DIR}/hosttest
 mkdir -p ${HOSTDIR}
 
 start_test klippy "Test invoke klippy"
-$PYTHON scripts/test_klippy.py -d ${DICTDIR} test/klippy/*.test
+$PYTHON -m pytest --dictdir ${DICTDIR}
 finish_test klippy "Test invoke klippy"
